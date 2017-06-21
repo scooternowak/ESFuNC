@@ -45,7 +45,7 @@
 # The algorithm generates a significant amount of output.  This is also the location to which all
 # files will be exported.  Defaults to C:\\
 
-setwd("C:\\Users\\rober\\Desktop\\ESFuNC Submission\\Github Uploads\\")
+setwd("C:\\")
 
 
 ##############################################
