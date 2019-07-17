@@ -1,7 +1,7 @@
 # ESFuNC
 Ensemble of Segmented Functional Nonparametric Classifiers
 
-Robert Buscaglia (rbuscagl@asu.edu)
+Robert Buscaglia (robert.buscaglia@nau.edu)
 
 Yiannis Kamarianakis (yiannis76@asu.edu)
 
