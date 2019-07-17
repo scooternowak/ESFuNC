@@ -5,6 +5,10 @@ Robert Buscaglia (robert.buscaglia@nau.edu)
 
 Yiannis Kamarianakis (yiannis76@asu.edu)
 
+July 17, 2019
+
+Files from March 2018 were uploaded.  The ESFuNC_Functions and a template for setting up curve classification are now available.
+
 June 20, 2017
 
 To run the ESFuNC analysis, place all files in the repository into a single directory.  This includes
