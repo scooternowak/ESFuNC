@@ -45,8 +45,8 @@
 # The algorithm generates a significant amount of output.  This is also the location to which all
 # files will be exported.  Defaults to C:\\
 
-setwd("C:\\")
-
+# setwd("C:\\")
+setwd("/Users/scooternowak/Documents/School Stuff/NAU-PhD/BuscagliaRStuff/ESFuNC")
 
 ##############################################
 ### Step 2 - Source functions and packages ###
