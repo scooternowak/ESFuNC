@@ -1,0 +1,137 @@
+---
+title: "Basic Lupus Data Metrics"
+author: "Scooter Nowak"
+date: "`r format(Sys.time(),  '%B %d, %Y')`"
+fontsize: 12pt
+geometry: margin=1.5cm
+output:
+  pdf_document:
+  extra_dependencies: ["xcolor"]
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(dplyr)
+library(knitr)
+library(reshape2)
+library(pracma)
+```
+
+```{r, fig.height=4, fig.width=8, echo=TRUE}
+lupus<-read.table("lupustherm.txt")
+data.temp<-as.matrix(lupus[,1:451])
+classes.temp<-as.numeric(lupus[,452])
+argvals=seq(45.0, 90.0, 0.1)
+
+
+df.l <- data.frame(data.temp)
+
+gen <- function(df, f){
+  apply(df, 1, FUN=f)
+}
+
+gen_peaks <- function(y,p){
+  x <- as.numeric(y)
+  peaklist <- c()
+  peak <- 0
+  for (i in 1:length(x)){
+    if (x[i] > peak){
+      peak <- x[i]
+      if (peak > x[i+1] &&
+          peak > x[i+2] &&
+          peak > x[i+3] &&
+          peak > x[i+4] &&
+          peak > x[i+5]){
+        peaklist <- c(peaklist, peak)
+      }
+    }
+  }
+  sort(peaklist)[length(peaklist)-p]
+}
+
+get_peak1 <- function(x){
+  output <- findpeaks(x, nups=2, ndowns=2, minpeakdistance=10, npeaks=2)
+  output <- output[order(output[,2]),]
+  output[1,1]
+}
+
+get_peak2 <- function(x){
+  output <- findpeaks(x, nups=2, ndowns=2, minpeakdistance=10, npeaks=2)
+  output <- output[order(output[,2]),]
+  output[2,1]
+}
+
+temp <- seq(45.0, 90.0, by=0.1)
+samples <- nrow(df.l)
+
+df.stats <- data.frame(Sample=seq(1, nrow(df.l), by=1))
+df.stats$sel <- classes.temp
+df.stats$mean <- apply(df.l, 1, mean)
+df.stats$median <- apply(df.l, 1, median)
+df.stats$sd <- apply(df.l, 1, sd)
+df.stats$max <- apply(df.l, 1, max)
+df.stats$max <- temp[apply(df.l, 1, which.max)]
+df.stats$min <- apply(df.l, 1, min)
+df.stats$tarea <- apply(df.l, 1, function(x) sum(x)*0.1)
+
+df.stats$peak1 <- apply(df.l, 1, get_peak1)
+for (i in 1:nrow(df.l)){df.stats$tpeak1[i] <-
+  temp[match(df.stats$peak1[i], df.l[i:i,])]}
+
+df.stats$peak2 <- apply(df.l, 1, get_peak2)
+for (i in 1:nrow(df.l)){df.stats$tpeak2[i] <-
+  temp[match(df.stats$peak2[i], df.l[i:i,])]}
+
+df.stats$peak12ratio <- df.stats$peak1/df.stats$peak2
+df.stats$tfm <- apply(df.l, 1, function(x) sum(x*temp)/sum(x))
+head(df.stats, 10)
+```
+
+```{r, fig.height=4, fig.width=8, echo=TRUE}
+#   output <- output[order(output[,2]),]
+ups <- 2
+downs <- 2
+dist <- 15
+
+p.vector1 <- as.numeric(df.l[1:1,])
+peaks1 <- findpeaks(p.vector1, nups=ups, ndowns=downs, minpeakdistance=dist, npeaks=2)
+peaks1 <- peaks1[order(peaks1[,2]),]
+peaks1
+p.vector2 <- as.numeric(df.l[2:2,])
+peaks2 <- findpeaks(p.vector2, nups=ups, ndowns=downs, minpeakdistance=dist, npeaks=2)
+peaks2 <- peaks2[order(peaks2[,2]),]
+peaks2
+p.vector3 <- as.numeric(df.l[3:3,])
+peaks3 <- findpeaks(p.vector3, nups=ups, ndowns=downs, minpeakdistance=dist, npeaks=2)
+peaks3 <- peaks3[order(peaks3[,2]),]
+peaks3
+
+df.test <- data.frame(cbind(argvals, p.vector1, p.vector2, p.vector3))
+df.test.long <- gather(df.test, p.vector, value, p.vector1:p.vector3, factor_key=TRUE)
+
+ggplot(df.test.long, aes(y = value, x = argvals, color=p.vector)) +
+  geom_point() +
+  geom_vline(xintercept=df.stats[1,]$tpeak1, color='red', size=1.5) +
+  geom_vline(xintercept=df.stats[1,]$tpeak2, color='red', size=1.5, linetype=4) +
+  geom_vline(xintercept=df.stats[2,]$tpeak1, color='green', size=1.5) +
+  geom_vline(xintercept=df.stats[2,]$tpeak2, color='green', size=1.5, linetype=4) +
+  geom_vline(xintercept=df.stats[3,]$tpeak1, color='blue', size=1.5) +
+  geom_vline(xintercept=df.stats[3,]$tpeak2, color='blue', size=1.5, linetype=4)
+
+seq(45,90, 0.1)[135:176]
+seq(45,90, 0.1)[258:293]
+```
+
+```{r, fig.height=4, fig.width=8, echo=TRUE}
+df.stats %>%
+ggplot(aes(x=sel, group=sel, y=mean)) +
+  geom_boxplot() +
+  labs(x='SEL Group', y='Mean')
+
+df.stats %>%
+ggplot(aes(x=sel, group=sel, y=tarea)) +
+  geom_boxplot() +
+  labs(x='SEL Group', y='Total Area')
+```

@@ -1,0 +1,73 @@
+---
+title: "Basic Lupus Data Metrics"
+author: "Scooter Nowak"
+date: "`r format(Sys.time(),  '%B %d, %Y')`"
+fontsize: 12pt
+geometry: margin=1.5cm
+output:
+  pdf_document:
+  extra_dependencies: ["xcolor"]
+---
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(dplyr)
+library(knitr)
+library(reshape2)
+```
+
+```{r, echo=TRUE}
+lupus<-read.table("lupustherm.txt")
+data.temp<-as.matrix(lupus[,1:451])
+classes.temp<-as.numeric(lupus[,452])
+argvals=seq(45.0, 90.0, 0.1)
+
+df.l <- data.frame(data.temp)
+
+gen <- function(df, f){
+  apply(df, 1, FUN=f)
+}
+
+gen_peaks <- function(x,p){
+  peaklist <- c()
+  peak <- 0
+  for (i in 1:length(x)){
+    if (x[i] > peak) {peak <- x[i]}
+  }
+  sort(peaklist)[length(peaklist)-p]
+}
+
+temp <- seq(45.0, 90.0, by=0.1)
+samples <- nrow(df.l)
+
+df.stats <- data.frame(Sample=seq(1, nrow(df.l), by=1))
+df.stats$mean <- apply(df.l, 1, mean)
+df.stats$median <- apply(df.l, 1, median)
+df.stats$sd <- apply(df.l, 1, sd)
+df.stats$min <- apply(df.l, 1, min)
+df.stats$tarea <- apply(df.l, 1, function(x) sum(x)*0.1)
+df.stats$peak1 <- apply(df.l, 1, max)
+df.stats$tpeak1 <- temp[apply(df.l, 1, which.max)]
+# for (i in 1:nrow(df.l)){df.stats$peak2[i] <-
+#   gen_peaks(df.l[i:i,], 1)}
+# for (i in 1:nrow(df.l)){df.stats$tpeak2[i] <-
+#   temp[match(df.stats$peak2[i], df.l[i:i,])]}
+# df.stats$peak12ratio <- df.stats$peak1/df.stats$peak2
+df.stats$tfm <- apply(df.l, 1, function(x) sum(x*temp)/sum(x))
+# head(df.stats, 10)
+
+x=1
+t.vector <- as.numeric(df.l[1:1,])
+peaklist <- c()
+  peak <- 0
+  for (i in 1:length(t.vector)){
+    if (t.vector[i] > peak) {
+      peak <- t.vector[i]
+      peaklist <- c(peaklist, peak)
+    } else if (t.vector[i+1] < peak){
+      print(t.vector[i+1])
+      peaklist <- c(peaklist, peak)
+    }
+  }
+print(peaklist)
+```
